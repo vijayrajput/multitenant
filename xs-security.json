@@ -1,0 +1,24 @@
+{
+	"xsappname": "approuter2-demo",
+	"tenant-mode": "dedicated",
+	"description": "Security profile of called application",
+	"scopes": [
+		{
+			"name": "$XSAPPNAME.demo",
+			"description": "Demo Scope"
+		},
+		{
+			"name": "",
+			"description": "UAA"
+		}
+	],
+	"role-templates": [
+		{
+			"name": "Demo_Role",
+			"description": "Demo Role",
+			"scope-references": [
+				"$XSAPPNAME.demo","uaa.user"
+			]
+		}
+	]
+}

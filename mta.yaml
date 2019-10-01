@@ -1,0 +1,117 @@
+ID: bookshop8
+_schema-version: '2.1'
+parameters:
+  deploy_mode: html5-repo
+version: 0.0.10
+modules:
+  - name: bookshop8_appRouter
+    type: approuter.nodejs
+    path: bookshop8_appRouter
+    parameters:
+      disk-quota: 256M
+      memory: 256M
+    requires:
+      - name: bookshop8_html5_repo_runtime
+      - name: bookshop8-uaa
+      - name: srv_api
+        group: destinations
+        properties:
+          forwardAuthToken: true
+          strictSSL: false
+          name: srv_api
+          url: '~{url}'
+      - name: portal_resources_bookshop8
+      - name: dest_bookshop8
+  - name: bookshop8_ui_deployer
+    type: com.sap.html5.application-content
+    path: bookshop8_ui_deployer
+    requires:
+      - name: FioriDemo_html5_repo_host
+    build-parameters:
+      requires:
+        - name: demo
+          artifacts:
+            - './*'
+          target-path: resources/demo
+        - name: books
+          artifacts:
+            - './*'
+          target-path: resources/books
+  - name: bookshop8-db
+    type: hdb
+    path: db
+    parameters:
+      memory: 256M
+      disk-quota: 256M
+    requires:
+      - name: bookshop8-db-hdi-container
+  - name: bookshop8-srv
+    type: java
+    path: srv
+    parameters:
+      memory: 1024M
+    provides:
+      - name: srv_api
+        properties:
+          url: '${default-url}'
+    requires:
+      - name: bookshop8-db-hdi-container
+        properties:
+          JBP_CONFIG_RESOURCE_CONFIGURATION: '[tomcat/webapps/ROOT/META-INF/context.xml: {"service_name_for_DefaultDB" : "~{hdi-container-name}"}]'
+      - name: bookshop8-uaa
+  - name: demo
+    type: html5
+    path: demo
+    build-parameters:
+      builder: grunt
+      supported-platforms: []
+      build-result: dist
+  - name: launchpad
+    type: com.sap.portal.content
+    path: launchpad
+    parameters:
+      stack: cflinuxfs3
+      memory: 128M
+      buildpack: 'https://github.com/cloudfoundry/nodejs-buildpack/releases/download/v1.6.39/nodejs-buildpack-cflinuxfs3-v1.6.39.zip'
+    requires:
+      - name: portal_resources_bookshop8
+      - name: bookshop8-uaa
+      - name: FioriDemo_html5_repo_host
+      - name: bookshop8_ui_deployer
+  - name: books
+    type: html5
+    path: books
+    build-parameters:
+      builder: grunt
+      supported-platforms: []
+      build-result: dist
+resources:
+  - name: bookshop8_html5_repo_runtime
+    parameters:
+      service-plan: app-runtime
+      service: html5-apps-repo
+    type: org.cloudfoundry.managed-service
+  - name: FioriDemo_html5_repo_host
+    parameters:
+      service-plan: app-host
+      service: html5-apps-repo
+      service-name: FioriDemo_html5_repo_host
+    type: org.cloudfoundry.existing-service
+  - name: bookshop8-db-hdi-container
+    type: com.sap.xs.hdi-container
+    properties:
+      hdi-container-name: '${service-name}'
+  - name: bookshop8-uaa
+    type: org.cloudfoundry.existing-service
+    parameters:
+      service-name: bookshop8-uaa
+  - name: dest_bookshop8
+    parameters:
+      service-plan: lite
+      service: destination
+    type: org.cloudfoundry.managed-service
+  - name: portal_resources_bookshop8
+    parameters:
+      service-plan: standard
+      service: portal
+    type: org.cloudfoundry.managed-service
