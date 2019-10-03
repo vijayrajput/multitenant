@@ -1,6 +1,6 @@
 {
-	"xsappname": "approuter2-demo",
-	"tenant-mode": "dedicated",
+	"xsappname": "approuter3-demo",
+	"tenant-mode": "shared",
 	"description": "Security profile of called application",
 	"scopes": [
 		{
@@ -10,7 +10,14 @@
 		{
 			"name": "",
 			"description": "UAA"
-		}
+		},
+		{
+		"name": "$XSAPPNAME.Callback",
+		"description": "With this scope set, the callbacks for tenant onboarding, offboarding and getDependencies can be called.",
+		"grant-as-authority-to-apps": [
+			"$XSAPPNAME(application,sap-provisioning,tenant-onboarding)"
+		]
+	}
 	],
 	"role-templates": [
 		{

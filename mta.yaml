@@ -2,7 +2,7 @@ ID: bookshop8
 _schema-version: '2.1'
 parameters:
   deploy_mode: html5-repo
-version: 0.0.10
+version: 0.1.02
 modules:
   - name: bookshop8_appRouter
     type: approuter.nodejs
@@ -13,15 +13,10 @@ modules:
     requires:
       - name: bookshop8_html5_repo_runtime
       - name: bookshop8-uaa
-      - name: srv_api
-        group: destinations
-        properties:
-          forwardAuthToken: true
-          strictSSL: false
-          name: srv_api
-          url: '~{url}'
       - name: portal_resources_bookshop8
       - name: dest_bookshop8
+    properties:
+      TENANT_HOST_PATTERN: "^(.*)-dev-bookshop8-approuter.cfapps.eu10.hana.ondemand.com"
   - name: bookshop8_ui_deployer
     type: com.sap.html5.application-content
     path: bookshop8_ui_deployer
