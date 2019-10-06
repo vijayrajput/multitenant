@@ -3,7 +3,7 @@ _schema-version: '2.1'
 parameters:
   deploy_mode: html5-repo
   saas-registry_appName: null
-version: 0.2.01
+version: 0.2.02
 modules:
   - name: bookshop8_appRouter
     type: approuter.nodejs
@@ -55,13 +55,12 @@ modules:
       - name: srv_api
         properties:
           url: '${default-url}'
+    properties:
+      SAP_JWT_TRUST_ACL: [{"clientid":"*","identityzone":"*"}]
     requires:
       - name: bookshop8-db-hdi-container
         properties:
           JBP_CONFIG_RESOURCE_CONFIGURATION: '[tomcat/webapps/ROOT/META-INF/context.xml: {"service_name_for_DefaultDB" : "~{hdi-container-name}"}]'
-          SAP_JWT_TRUST_ACL:
-            - clientid: '*'
-              identityzone: '*'
       - name: bookshop8-uaa2
   - name: demo
     type: html5
@@ -70,7 +69,7 @@ modules:
       builder: grunt
       supported-platforms: []
       build-result: dist
-  - name: launchpad
+  - name: bookshop8-launchpad
     type: com.sap.portal.content
     deployed-after: [ bookshop8_ui_deployer ]
     path: launchpad
@@ -90,6 +89,12 @@ modules:
       builder: grunt
       supported-platforms: []
       build-result: dist
+    requires:
+      - name: srv_api
+        group: destinations
+        properties:
+          name: srv_api
+          url: ~{url}
   - name: subscribe
     type: nodejs
     path: subscribe

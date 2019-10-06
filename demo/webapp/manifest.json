@@ -22,9 +22,9 @@
 					},
 					"semanticObject": "main",
 					"action": "display",
-					"title": "Books",
+					"title": "Demo",
 					"icon": "sap-icon://address-book",
-					"subTitle": ""
+					"subTitle": "UI5 App"
 				}
 			}
 		}

@@ -14,7 +14,7 @@
 		},
 		"dataSources": {
 			"mainService": {
-				"uri": "/BookshopService/odata/v2/CatalogService/",
+				"uri": "/srv_api/odata/v2/CatalogService/",
 				"type": "OData",
 				"settings": {
 					"localUri": "localService/metadata.xml"
@@ -165,5 +165,10 @@
 	},
 	"sap.platform.hcp": {
 		"uri": ""
-	}
+	} ,
+	"sap.platform.cf": {
+        "oAuthScopes": [
+            "$XSAPPNAME.demo"
+        ]
+    }
 }

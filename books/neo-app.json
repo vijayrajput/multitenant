@@ -2,12 +2,13 @@
   "welcomeFile": "/webapp/test/flpSandbox.html",
   "routes": [
     {
-      "path": "/BookshopService",
+      "path": "srv_api/odata/v2",
       "target": {
         "type": "destination",
-        "name": "BookshopService"
+        "name": "destination-placeholder",
+        "entryPath": "/odata/v2"
       },
-      "description": "Test CF Service"
+      "description": "Dummy destination to be mapped to a real destination when running the application (hc_destmapping URL parameter)"
     },
     {
       "path": "/resources",
