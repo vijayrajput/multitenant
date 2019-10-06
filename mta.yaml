@@ -2,7 +2,8 @@ ID: bookshop8
 _schema-version: '2.1'
 parameters:
   deploy_mode: html5-repo
-version: 0.1.02
+  saas-registry_appName: null
+version: 0.2.01
 modules:
   - name: bookshop8_appRouter
     type: approuter.nodejs
@@ -11,17 +12,21 @@ modules:
       disk-quota: 256M
       memory: 256M
     requires:
-      - name: bookshop8_html5_repo_runtime
-      - name: bookshop8-uaa
-      - name: portal_resources_bookshop8
-      - name: dest_bookshop8
+      - name: bookshop8-html5_rt
+      - name: bookshop8-uaa2
+      - name: bookshop8-portal
+      - name: bookshop8-destination
     properties:
-      TENANT_HOST_PATTERN: "^(.*)-dev-bookshop8-approuter.cfapps.eu10.hana.ondemand.com"
+      TENANT_HOST_PATTERN: '^(.*)-dev-bookshop8-approuter.cfapps.eu10.hana.ondemand.com'
+      T_MODE: multitenant
+      SAP_JWT_TRUST_ACL:
+        - clientid: '*'
+          identityzone: '*'
   - name: bookshop8_ui_deployer
     type: com.sap.html5.application-content
     path: bookshop8_ui_deployer
     requires:
-      - name: FioriDemo_html5_repo_host
+      - name: bookshop8-html5_host
     build-parameters:
       requires:
         - name: demo
@@ -43,6 +48,7 @@ modules:
   - name: bookshop8-srv
     type: java
     path: srv
+    deployed-after: [ bookshop8-db ] 
     parameters:
       memory: 1024M
     provides:
@@ -53,7 +59,10 @@ modules:
       - name: bookshop8-db-hdi-container
         properties:
           JBP_CONFIG_RESOURCE_CONFIGURATION: '[tomcat/webapps/ROOT/META-INF/context.xml: {"service_name_for_DefaultDB" : "~{hdi-container-name}"}]'
-      - name: bookshop8-uaa
+          SAP_JWT_TRUST_ACL:
+            - clientid: '*'
+              identityzone: '*'
+      - name: bookshop8-uaa2
   - name: demo
     type: html5
     path: demo
@@ -63,15 +72,16 @@ modules:
       build-result: dist
   - name: launchpad
     type: com.sap.portal.content
+    deployed-after: [ bookshop8_ui_deployer ]
     path: launchpad
     parameters:
       stack: cflinuxfs3
       memory: 128M
       buildpack: 'https://github.com/cloudfoundry/nodejs-buildpack/releases/download/v1.6.39/nodejs-buildpack-cflinuxfs3-v1.6.39.zip'
     requires:
-      - name: portal_resources_bookshop8
-      - name: bookshop8-uaa
-      - name: FioriDemo_html5_repo_host
+      - name: bookshop8-portal
+      - name: bookshop8-uaa2
+      - name: bookshop8-html5_host
       - name: bookshop8_ui_deployer
   - name: books
     type: html5
@@ -80,32 +90,64 @@ modules:
       builder: grunt
       supported-platforms: []
       build-result: dist
+  - name: subscribe
+    type: nodejs
+    path: subscribe
+    provides:
+      - name: subscribe_api
+        properties:
+          url: '${default-url}'
+    properties:
+      SAP_JWT_TRUST_ACL:
+        - clientid: '*'
+          identityzone: sap-provisioning
+    requires:
+      - name: bookshop8-uaa2
 resources:
-  - name: bookshop8_html5_repo_runtime
+  - name: bookshop8-html5_rt
     parameters:
       service-plan: app-runtime
       service: html5-apps-repo
     type: org.cloudfoundry.managed-service
-  - name: FioriDemo_html5_repo_host
+  - name: bookshop8-html5_host
     parameters:
       service-plan: app-host
       service: html5-apps-repo
-      service-name: FioriDemo_html5_repo_host
-    type: org.cloudfoundry.existing-service
+      service-name: bookshop8-html5_host
+    type: org.cloudfoundry.managed-service
   - name: bookshop8-db-hdi-container
     type: com.sap.xs.hdi-container
     properties:
       hdi-container-name: '${service-name}'
-  - name: bookshop8-uaa
-    type: org.cloudfoundry.existing-service
+  - name: bookshop8-uaa2
+    type: com.sap.xs.uaa
     parameters:
-      service-name: bookshop8-uaa
-  - name: dest_bookshop8
+      service-name: bookshop8-uaa2
+      service-plan: application
+      config:
+        xsappname: 'bootcamp8-${org}-${space}'
+        tenant-mode: shared
+        scopes:
+          - name: $XSAPPNAME.demo
+            description: Demo Scope
+          - name: uaa.user
+            description: UAA Service
+          - name: $XSAPPNAME.Callback
+            description: Multi Tenancy Callback Access
+            grant-as-authority-to-apps:
+             - $XSAPPNAME(application,sap-provisioning,tenant-onboarding)
+        role-templates:
+          - name: Demo_Role
+            description: Demo Role
+            scope-references:
+              - $XSAPPNAME.demo
+              - uaa.user
+  - name: bookshop8-destination
     parameters:
       service-plan: lite
       service: destination
     type: org.cloudfoundry.managed-service
-  - name: portal_resources_bookshop8
+  - name: bookshop8-portal
     parameters:
       service-plan: standard
       service: portal
