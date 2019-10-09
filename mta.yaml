@@ -3,7 +3,7 @@ _schema-version: '2.1'
 parameters:
   deploy_mode: html5-repo
   saas-registry_appName: null
-version: 0.2.02
+version: 0.2.03
 modules:
   - name: bookshop8_appRouter
     type: approuter.nodejs
@@ -16,12 +16,6 @@ modules:
       - name: bookshop8-uaa2
       - name: bookshop8-portal
       - name: bookshop8-destination
-    properties:
-      TENANT_HOST_PATTERN: '^(.*)-dev-bookshop8-approuter.cfapps.eu10.hana.ondemand.com'
-      T_MODE: multitenant
-      SAP_JWT_TRUST_ACL:
-        - clientid: '*'
-          identityzone: '*'
   - name: bookshop8_ui_deployer
     type: com.sap.html5.application-content
     path: bookshop8_ui_deployer
@@ -95,7 +89,7 @@ modules:
         properties:
           name: srv_api
           url: ~{url}
-  - name: subscribe
+  - name: bookshop8-subscribe
     type: nodejs
     path: subscribe
     provides:
@@ -131,7 +125,7 @@ resources:
       service-plan: application
       config:
         xsappname: 'bootcamp8-${org}-${space}'
-        tenant-mode: shared
+        tenant-mode: dedicated
         scopes:
           - name: $XSAPPNAME.demo
             description: Demo Scope
